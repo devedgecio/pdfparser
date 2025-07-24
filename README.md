@@ -15,7 +15,7 @@ Welcome to the **PDF Parser App**! This guide will help you set up and run the a
 1. **Navigate to the Project Directory**:
     Open your terminal and navigate to the directory where the project files are located. Use the following command:
     ```bash
-    cd ~/Desktop/FAST\ API\ PDF\ PARSER/
+    cd ~/Path-to-PDF-PARSER-DIR
     ```
 
 2. **Install Dependencies**:
@@ -32,7 +32,7 @@ Welcome to the **PDF Parser App**! This guide will help you set up and run the a
 
 4. **Access the App**:
     Open your browser and go to `http://localhost:8501` to view the app.
-    - The app will display two tables: **metadata** and a **final CSV**.
+    - The app will display two tables: **metadata** and a **final Table**.
 
 ---
 
@@ -47,7 +47,7 @@ Welcome to the **PDF Parser App**! This guide will help you set up and run the a
 1. **Navigate to the Project Directory**:
     Open your terminal and navigate to the project directory:
     ```bash
-    cd ~/Desktop/FAST\ API\ PDF\ PARSER/
+    cd ~/Path-to-PDF-PARSER-DIR
     ```
 
 2. **Install Dependencies**:
@@ -87,7 +87,7 @@ Welcome to the **PDF Parser App**! This guide will help you set up and run the a
 1. **Navigate to the Project Directory**:
     Open your terminal and navigate to the project directory:
     ```bash
-    cd ~/Desktop/FAST\ API\ PDF\ PARSER/
+    cd ~/Path-to-PDF-PARSER-DIR
     ```
 
 2. **Build the Docker Image**:
