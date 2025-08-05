@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  pdf-parser-fastapi:
+    build:
+      context: .
+      args:
+        input_path: ${input_path}
+    ports:
+      - "8000:8000"
+      - "8501:8501"
+    env_file:
+      - .env
+    container_name: pdf-parser-fastapi
+    volumes:
+      - .:/app
+      - ${input_path}:${input_path}  # Mount input_path from host to container
+      - ${output_path}:${output_path}  # Mount output_path from host to container
+    restart: unless-stopped
