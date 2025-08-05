@@ -132,10 +132,7 @@ Welcome to the **PDF Parser App**! This guide will help you set up and run the a
         - `filename.json`: The metadata.
 
 ---
-## 4. Running the FastAPI App
-    Follow the steps:
-    - Rename the .env_example to .env
-    - Just set the values with your APIs and other required things
+
 ## Troubleshooting
 
 1. **Port Conflicts**:
