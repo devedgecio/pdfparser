@@ -1258,41 +1258,16 @@ def remove_extra_text(dfs):
     else:
         return updated_dfs
 
-# def clean_last_row_numbers(dfs):
-#     """
-#     Cleans the last row of each DataFrame (or a single DataFrame).
-#     Extracts numbers from strings if present. Leaves cells without numbers unchanged.
-#     Supports both a single DataFrame and a list of DataFrames.
-#     """
-#     if isinstance(dfs, pd.DataFrame):
-#         dfs = [dfs]  # wrap in list if it's a single DataFrame
-
-#     for df in dfs:
-#         if not isinstance(df, pd.DataFrame) or df.empty:
-#             continue
-
-#         last_row_idx = df.index[-1]
-
-#         for col in df.columns:
-#             val = df.at[last_row_idx, col]
-#             if isinstance(val, str):
-#                 match = re.search(r'[-+]?\d*\.\d+|\d+', val)
-#                 if match:
-#                     number_str = match.group()
-#                     number = float(number_str) if '.' in number_str else int(number_str)
-#                     df.at[last_row_idx, col] = number
-
-#     return dfs if len(dfs) > 1 else dfs[0]
 
 def clean_last_row_numbers(dfs):
     """
     Cleans the last row of each DataFrame (or a single DataFrame).
-    If a cell contains letters and also a number, remove the letters and keep the number.
-    If there's no number, leave the cell unchanged.
+    Extracts all numeric values from each cell in the last row.
+    If one or more numbers are found, stores them as a comma-separated string.
     Accepts a single DataFrame or a list of them.
     """
     if isinstance(dfs, pd.DataFrame):
-        dfs = [dfs]  # wrap in list
+        dfs = [dfs]  # Wrap single DataFrame in a list
 
     for df in dfs:
         if not isinstance(df, pd.DataFrame) or df.empty:
@@ -1303,17 +1278,72 @@ def clean_last_row_numbers(dfs):
         for col in df.columns:
             val = df.at[last_row_idx, col]
             if isinstance(val, str):
-                # Remove only alphabetic characters, keep digits, symbols, etc.
-                cleaned = re.sub(r'[a-zA-Z]', '', val).strip()
-
-                # If something numeric remains, convert it to int or float
-                match = re.search(r'[-+]?\d*\.\d+|\d+', cleaned)
-                if match:
-                    number_str = match.group()
-                    number = float(number_str) if '.' in number_str else int(number_str)
-                    df.at[last_row_idx, col] = number
+                val = val.replace('\n', ' ')  # Normalize newlines
+                matches = re.findall(r'[-+]?\d*\.\d+|\d+', val)
+                if matches:
+                    # Join all found numbers into a string, preserving decimals
+                    cleaned = ', '.join(matches)
+                    df.at[last_row_idx, col] = cleaned
 
     return dfs if len(dfs) > 1 else dfs[0]
+
+
+def split_numeric_columns(dfs, columns=None, prefix=None):
+    """
+    Splits comma-separated numeric values in specified columns into separate new columns.
+    Only the split columns are renamed (e.g., 'A_1', 'A_2'); others remain unchanged.
+
+    Parameters:
+    - dfs: A single DataFrame or a list of DataFrames.
+    - columns: List of column names to split (default: all columns).
+    - prefix: Optional prefix for new columns (default: original column name).
+
+    Returns:
+    - A single DataFrame or a list of DataFrames with split columns.
+    """
+    if isinstance(dfs, pd.DataFrame):
+        dfs = [dfs]
+
+    result_dfs = []
+
+    for df in dfs:
+        if not isinstance(df, pd.DataFrame) or df.empty:
+            result_dfs.append(df)
+            continue
+
+        df_copy = df.copy()
+        cols_to_process = columns or df_copy.columns
+
+        for col in cols_to_process:
+            if col not in df_copy.columns:
+                continue
+
+            # Check if any cell has a comma — only then proceed to split
+            if not df_copy[col].astype(str).str.contains(',').any():
+                continue
+
+            # Perform the split
+            split_data = df_copy[col].astype(str).str.split(r'\s*,\s*', expand=True)
+
+            # Create new column names for the split parts
+            new_col_names = [
+                f"{prefix or col}_{i+1}" for i in range(split_data.shape[1])
+            ]
+            split_data.columns = new_col_names
+
+
+            # Insert split columns at the position of the original column
+            insert_at = df_copy.columns.get_loc(col)
+            df_copy = df_copy.drop(columns=[col])
+            for i, new_col in enumerate(split_data.columns):
+                df_copy.insert(insert_at + i, new_col, split_data[new_col])
+
+        result_dfs.append(df_copy)
+
+    return result_dfs if len(result_dfs) > 1 else result_dfs[0]
+
+
+
 
 def remove_mostly_zero_rows(dfs, zero_tolerance=2):
     """
@@ -1407,15 +1437,7 @@ def process_pdf(pdf_bytes: bytes, _hash: str):
     f_df = remove_extra_text(f_df)
     f_df = clean_last_row_numbers(f_df)
     f_df = remove_mostly_zero_rows(f_df)
+    f_df = split_numeric_columns(f_df)
     print(f_df)
     return f_df
 
-
-# import hashlib
-# file = "/home/user/Downloads/sample_pdfs/test/dir_survey_5301500.pdf"
-# # file = "/home/user/Downloads/all/dir_survey_6739034.pdf"
-# with open(file, 'rb') as file:  # Open the file in binary mode
-#         file_bytes = file.read()  # Read the entire content of the file
-#         file_hash = hashlib.sha256(file_bytes).hexdigest()
-        
-# process_pdf(file_bytes,file_hash)
