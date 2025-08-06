@@ -78,6 +78,7 @@ def extract_vars_from_md_with_retry(md_content, max_retries=5):
             
             1. **Surface_Lat:**
             - *Latitude* of the surface location,  If it is in Degrees Minutes Seconds (DMS), convert it into decimal degrees. Don't Convert decimal degree format into Degrees Minutes Seconds (DMS) format. Pick from the smallest table related to Well Details or text if there are multiple values
+            2. **Surface_Long:**
             - *Longitude* of the surface location, If it is in Degrees Minutes Seconds (DMS), convert it into decimal degrees.  Don't Convert decimal degree format into Degrees Minutes Seconds (DMS) format. Pick from the smallest table related to Well Details or text if there are multiple values
             3. **Well_API:**
             - *API number* of the well, which includes a two-digit state code, a three-digit county code, and a five-digit well number, formatted as "42-..." (e.g., 42-003-49073-0000, 42-003-49073 means start with 42, don't skip any digit).
@@ -86,6 +87,7 @@ def extract_vars_from_md_with_retry(md_content, max_retries=5):
             -  US State Plane 1927 
             5. **Depth_Reference_Elevation:**
             - *Sum of ground elevation + RKB Elevation* you see. or if Well @ is already given. it is just a value, no text. So find both value and sum them or just find the value of Well @ and return it.
+
             --- 
             Remember: We are collecting this data for the Well Log PDF page, so the values should be relevant to the well log page.
             ---
@@ -93,6 +95,7 @@ def extract_vars_from_md_with_retry(md_content, max_retries=5):
 
 
             ### Extraction Guidelines:
+
             - When you set the above-mentioned variables' values, you have to **add field text/paragraph/table/text** (i.e., from which paragraph/table/text you took that value).
             - Ensure you keep **units of values** as standard, as mentioned.
             - **Respond strictly with valid JSON format**.
@@ -105,6 +108,7 @@ def extract_vars_from_md_with_retry(md_content, max_retries=5):
 
 
             **Instruction for JSON output formatting:**
+
             - Always produce **strictly valid JSON** that can be parsed by standard JSON parsers without errors.
             - Ensure all **strings are enclosed in double quotes** (`"`).
             - **Escape all special characters inside strings**, including double quotes (`"`), backslashes (`\\`), and control characters, using proper JSON escaping rules.
@@ -117,13 +121,15 @@ def extract_vars_from_md_with_retry(md_content, max_retries=5):
             Always prioritize JSON validity over brevity or formatting style.
 
 
-                Maintain the following order of varaibles in the JSON output:
+            Maintain the following order of varaibles in the JSON output:
             - **Well_API**
             - **Projection**
             - **Surface_Lat**
             - **Surface_Long**
             - **Depth_Reference_Elevation**
             ---
+
+            
             ### Example JSON Response:
             {
             "Well_API":["42-461-42137-0000","Field Spraberry (Trend Area) R 40 EXC Upton County, TX API 42-461-42137-0000"],
