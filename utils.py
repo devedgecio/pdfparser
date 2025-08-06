@@ -1241,7 +1241,7 @@ def remove_extra_text(dfs):
         
         # Iterate through the rows (excluding the first and last)
         rows_to_remove = []
-        for idx, row in updated_df.iloc[1:-1].iterrows():  # Skipping first and last rows
+        for idx, row in updated_df.iloc[1:].iterrows():  # Skipping first and last rows
             # Count the number of None (NaN) values in the row
             none_count = row.isna().sum()
             # Check if the row has more than half NaN values
@@ -1258,6 +1258,86 @@ def remove_extra_text(dfs):
     else:
         return updated_dfs
 
+# def clean_last_row_numbers(dfs):
+#     """
+#     Cleans the last row of each DataFrame (or a single DataFrame).
+#     Extracts numbers from strings if present. Leaves cells without numbers unchanged.
+#     Supports both a single DataFrame and a list of DataFrames.
+#     """
+#     if isinstance(dfs, pd.DataFrame):
+#         dfs = [dfs]  # wrap in list if it's a single DataFrame
+
+#     for df in dfs:
+#         if not isinstance(df, pd.DataFrame) or df.empty:
+#             continue
+
+#         last_row_idx = df.index[-1]
+
+#         for col in df.columns:
+#             val = df.at[last_row_idx, col]
+#             if isinstance(val, str):
+#                 match = re.search(r'[-+]?\d*\.\d+|\d+', val)
+#                 if match:
+#                     number_str = match.group()
+#                     number = float(number_str) if '.' in number_str else int(number_str)
+#                     df.at[last_row_idx, col] = number
+
+#     return dfs if len(dfs) > 1 else dfs[0]
+
+def clean_last_row_numbers(dfs):
+    """
+    Cleans the last row of each DataFrame (or a single DataFrame).
+    If a cell contains letters and also a number, remove the letters and keep the number.
+    If there's no number, leave the cell unchanged.
+    Accepts a single DataFrame or a list of them.
+    """
+    if isinstance(dfs, pd.DataFrame):
+        dfs = [dfs]  # wrap in list
+
+    for df in dfs:
+        if not isinstance(df, pd.DataFrame) or df.empty:
+            continue
+
+        last_row_idx = df.index[-1]
+
+        for col in df.columns:
+            val = df.at[last_row_idx, col]
+            if isinstance(val, str):
+                # Remove only alphabetic characters, keep digits, symbols, etc.
+                cleaned = re.sub(r'[a-zA-Z]', '', val).strip()
+
+                # If something numeric remains, convert it to int or float
+                match = re.search(r'[-+]?\d*\.\d+|\d+', cleaned)
+                if match:
+                    number_str = match.group()
+                    number = float(number_str) if '.' in number_str else int(number_str)
+                    df.at[last_row_idx, col] = number
+
+    return dfs if len(dfs) > 1 else dfs[0]
+
+def remove_mostly_zero_rows(dfs, zero_tolerance=2):
+    """
+    Removes rows where number of non-zero columns is <= zero_tolerance.
+    E.g., zero_tolerance=1 means: remove rows with only 0 or 1 non-zero values.
+    Accepts a single DataFrame or a list of DataFrames.
+    """
+    if isinstance(dfs, pd.DataFrame):
+        dfs = [dfs]
+
+    cleaned_dfs = []
+    for df in dfs:
+        if not isinstance(df, pd.DataFrame) or df.empty:
+            cleaned_dfs.append(df)
+            continue
+
+        numeric_df = df.apply(pd.to_numeric, errors='coerce').fillna(0)
+        non_zero_counts = (numeric_df != 0).sum(axis=1)
+        mask = non_zero_counts > zero_tolerance - 1  # keep rows with >= tolerance
+        cleaned_df = df[mask].copy()
+
+        cleaned_dfs.append(cleaned_df)
+
+    return cleaned_dfs if len(cleaned_dfs) > 1 else cleaned_dfs[0]
 
 def process_pdf(pdf_bytes: bytes, _hash: str):
 
@@ -1277,6 +1357,7 @@ def process_pdf(pdf_bytes: bytes, _hash: str):
         df = replace_unwanted_values(df)
 
     normalized_dfs = []
+    clean_cell_values_in_dfs(clean)
     for i,df in enumerate(clean):
         df = normalize_table_by_column_first_cell(df)
         print(f"================================================= Table {i} ===========================================")
@@ -1324,6 +1405,8 @@ def process_pdf(pdf_bytes: bytes, _hash: str):
     
     f_df = create_new_columns(df)
     f_df = remove_extra_text(f_df)
+    f_df = clean_last_row_numbers(f_df)
+    f_df = remove_mostly_zero_rows(f_df)
     print(f_df)
     return f_df
 

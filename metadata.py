@@ -82,7 +82,8 @@ def extract_vars_from_md_with_retry(md_content, max_retries=5):
             3. **Well_API:**
             - *API number* of the well, which includes a two-digit state code, a three-digit county code, and a five-digit well number, formatted as "42-..." (e.g., 42-003-49073-0000, 42-003-49073 means start with 42, don't skip any digit).
             4. **Projection:**
-            - The *projection* or map reference, typically formatted as something like CRS "US-SPC27-EXACT / Texas Central 4203" Grid North not NAD 27 or similar terms.
+            - The *projection* or map reference, typically formatted as something like CRS "US-SPC27-EXACT / Texas Central 4203"  or similar terms.
+            -  US State Plane 1927 
             5. **Depth_Reference_Elevation:**
             - *Sum of ground elevation + RKB Elevation* you see. or if Well @ is already given. it is just a value, no text. So find both value and sum them or just find the value of Well @ and return it.
             --- 
@@ -126,7 +127,7 @@ def extract_vars_from_md_with_retry(md_content, max_retries=5):
             ### Example JSON Response:
             {
             "Well_API":["42-461-42137-0000","Field Spraberry (Trend Area) R 40 EXC Upton County, TX API 42-461-42137-0000"],
-            "Projection":["NAD27 / Lambert Texas SP, Central Zone (4203), US feet","Projection System NAD27 / Lambert Texas SP, Central Zone (4203), US feet"],
+            "Projection":["NUS State Plane 1927","US State Plane 1927"],
             "Surface_Lat":["31.683603","Slot Location Latitude: 31°49'0.9711\"N"],
             "Surface_Long":["-103.84236","Slot Location Longitude:  -103°50'32.4967\"W"],
             "Depth_Reference_Elevation":["2782.00ft","Rig: H&P 637 (KB) to Facility Vertical Datum 2756.00ft + Rig: H&P 637 (KB) to Ground Level at Slot (Owens-Cravens W31D No. 4H) 26.00ft"]
